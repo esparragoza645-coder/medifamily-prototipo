@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MediFamily – Tu salud familiar en un lugar</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap');
+
+  :root {
+    --mint:      #3ECFA4;
+    --mint-dark: #2aaa84;
+    --mint-soft: #d4f5ec;
+    --coral:     #FF6B6B;
+    --coral-soft:#fff0f0;
+    --sky:       #4FA3E0;
+    --sky-soft:  #e8f4fd;
+    --amber:     #FFB347;
+    --amber-soft:#fff7e8;
+    --purple:    #9B7FE8;
+    --purple-soft:#f3effd;
+    --bg:        #F4F7FB;
+    --white:     #FFFFFF;
+    --text:      #1A2340;
+    --muted:     #7A8599;
+    --border:    #E2E8F0;
+    --shadow:    0 4px 24px rgba(30,50,100,.08);
+    --shadow-lg: 0 12px 48px rgba(30,50,100,.14);
+    --r:         18px;
+    --r-sm:      10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #CBD8EA;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* ── PHONE SHELL ── */
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: var(--bg);
+    border-radius: 52px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.28), 0 0 0 10px #1a1a2e, 0 0 0 12px #333;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 48px;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 26px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    flex-shrink: 0;
+    z-index: 100;
+  }
+  .status-bar .notch {
+    width: 120px;
+    height: 34px;
+    background: #1a1a2e;
+    border-radius: 0 0 20px 20px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+  }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons svg { width: 16px; height: 16px; }
+
+  /* ── SCREEN SYSTEM ── */
+  .screen {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex-direction: column;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen.active { display: flex; }
+
+  /* ── ANIMATIONS ── */
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  @keyframes slideInUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
+  }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%     { transform: translateX(-8px); }
+    40%     { transform: translateX(8px); }
+    60%     { transform: translateX(-5px); }
+    80%     { transform: translateX(5px); }
+  }
+  @keyframes bounceIn {
+    0%  { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100%{ transform: scale(1); }
+  }
+  @keyframes progressFill {
+    from { width: 0; }
+    to   { width: var(--target); }
+  }
+
+  .screen.active { animation: slideInRight .35s cubic-bezier(.4,0,.2,1); }
+
+  /* ── COMMON COMPONENTS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn:active { transform: scale(.96); }
+  .btn-primary { background: var(--mint); color: white; }
+  .btn-primary:hover { background: var(--mint-dark); }
+  .btn-outline { background: white; color: var(--text); border: 2px solid var(--border); }
+  .btn-coral   { background: var(--coral); color: white; }
+  .btn-sky     { background: var(--sky); color: white; }
+  .btn-full    { width: 100%; }
+  .btn-lg      { padding: 18px 32px; font-size: 17px; }
+
+  .card {
+    background: var(--white);
+    border-radius: var(--r);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .chip-mint   { background: var(--mint-soft);   color: var(--mint-dark); }
+  .chip-coral  { background: var(--coral-soft);  color: var(--coral); }
+  .chip-amber  { background: var(--amber-soft);  color: #d48a2a; }
+  .chip-purple { background: var(--purple-soft); color: var(--purple); }
+
+  .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 900; color: white;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .input-group {
+    margin-bottom: 16px;
+  }
+  .input-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .input-group input, .input-group select, .input-group textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--border);
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    transition: border .2s;
+  }
+  .input-group input:focus,
+  .input-group select:focus { border-color: var(--mint); }
+
+  /* ── NAV BAR ── */
+  .nav-bar {
+    height: 72px;
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-shrink: 0;
+    padding: 0 8px;
+  }
+  .nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px 16px; border-radius: var(--r-sm);
+    cursor: pointer; transition: all .2s;
+    font-size: 11px; font-weight: 700; color: var(--muted);
+    border: none; background: transparent;
+  }
+  .nav-item svg { width: 24px; height: 24px; }
+  .nav-item.active { color: var(--mint); background: var(--mint-soft); }
+  .nav-item.active svg { stroke: var(--mint); }
+
+  /* ── TOP BAR ── */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 12px;
+    background: white;
+    flex-shrink: 0;
+  }
+  .top-bar h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .back-btn {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: white;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .2s;
+  }
+  .back-btn:hover { background: var(--bg); }
+
+  /* ══════════════════════════════════════════
+     SCREEN 1 — SPLASH
+  ══════════════════════════════════════════ */
+  #screen-splash {
+    background: linear-gradient(160deg, #0F2A4A 0%, #1A4066 50%, #0D3352 100%);
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+  .splash-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 70% 30%, rgba(62,207,164,.25) 0%, transparent 55%),
+                radial-gradient(circle at 20% 80%, rgba(79,163,224,.2) 0%, transparent 45%);
+  }
+  .splash-content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 20px; padding: 40px 36px; text-align: center;
+  }
+  .splash-logo {
+    width: 100px; height: 100px;
+    background: linear-gradient(135deg, var(--mint), var(--sky));
+    border-radius: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 46px;
+    box-shadow: 0 20px 60px rgba(62,207,164,.4);
+    animation: bounceIn .8s cubic-bezier(.4,0,.2,1) .3s both;
+  }
+  .splash-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 38px; font-weight: 800;
+    color: white;
+    line-height: 1;
+    animation: slideInUp .6s ease .6s both;
+  }
+  .splash-title span { color: var(--mint); }
+  .splash-sub {
+    font-size: 16px; color: rgba(255,255,255,.7);
+    line-height: 1.5;
+    animation: slideInUp .6s ease .75s both;
+  }
+  .splash-pills {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    animation: slideInUp .6s ease .9s both;
+  }
+  .splash-pill {
+    padding: 6px 14px; border-radius: 50px;
+    background: rgba(255,255,255,.12);
+    color: white; font-size: 13px; font-weight: 700;
+    backdrop-filter: blur(8px);
+  }
+  .splash-cta {
+    margin-top: 12px;
+    animation: slideInUp .6s ease 1.05s both;
+    width: 100%;
+  }
+  .splash-login {
+    margin-top: 8px;
+    color: rgba(255,255,255,.6);
+    font-size: 14px;
+    cursor: pointer;
+    animation: fadeIn .6s ease 1.2s both;
+  }
+  .splash-login span { color: var(--mint); font-weight: 700; }
+
+  /* ══════════════════════════════════════════
+     SCREEN 2 — ONBOARDING
+  ══════════════════════════════════════════ */
+  #screen-onboarding {
+    background: var(--white);
+    flex-direction: column;
+  }
+  .onb-progress {
+    display: flex; gap: 6px; padding: 20px 24px 0;
+  }
+  .onb-dot {
+    height: 5px; border-radius: 3px;
+    background: var(--border); flex: 1;
+    transition: background .3s;
+  }
+  .onb-dot.active { background: var(--mint); }
+  .onb-dot.done   { background: var(--mint-dark); }
+
+  .onb-slides {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .onb-slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 24px 32px;
+    opacity: 0; transform: translateX(60px);
+    transition: all .4s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+  }
+  .onb-slide.active {
+    opacity: 1; transform: translateX(0);
+    pointer-events: all;
+  }
+  .onb-slide.exit {
+    opacity: 0; transform: translateX(-60px);
+  }
+  .onb-illustration {
+    width: 200px; height: 180px;
+    border-radius: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 80px;
+    margin: 16px 0 28px;
+    position: relative;
+  }
+  .onb-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px; font-weight: 800; text-align: center;
+    color: var(--text); margin-bottom: 12px; line-height: 1.2;
+  }
+  .onb-desc {
+    font-size: 15px; text-align: center;
+    color: var(--muted); line-height: 1.6;
+  }
+  .onb-feature-list {
+    margin-top: 20px; width: 100%;
+  }
+  .onb-feature {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    font-size: 14px; font-weight: 600; color: var(--text);
+    border-bottom: 1px solid var(--border);
+  }
+  .onb-feature:last-child { border-bottom: none; }
+  .onb-feature-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+
+  .onb-footer {
+    padding: 20px 24px 28px;
+    display: flex; flex-direction: column; gap: 12px;
+    flex-shrink: 0;
+  }
+  .onb-nav {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .onb-step { font-size: 13px; font-weight: 700; color: var(--muted); }
+
+  /* ══════════════════════════════════════════
+     SCREEN 3 — HOME / DASHBOARD
+  ══════════════════════════════════════════ */
+  #screen-home {
+    flex-direction: column;
+    background: var(--bg);
+  }
+  .home-header {
+    background: linear-gradient(135deg, #0F2A4A 0%, #1A4066 100%);
+    padding: 20px 24px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .home-header::after {
+    content: '';
+    position: absolute; bottom: -30px; left: 0; right: 0;
+    height: 60px;
+    background: var(--bg);
+    border-radius: 30px 30px 0 0;
+  }
+  .home-header-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(62,207,164,.2) 0%, transparent 50%);
+  }
+  .home-header-content { position: relative; z-index: 1; }
+  .home-greeting {
+    font-size: 14px; color: rgba(255,255,255,.6); font-weight: 600;
+  }
+  .home-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px; font-weight: 800; color: white;
+    margin-bottom: 20px;
+  }
+  .adherence-card {
+    background: rgba(255,255,255,.12);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border: 1px solid rgba(255,255,255,.15);
+  }
+  .adherence-ring {
+    width: 72px; height: 72px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .adherence-ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+  .adherence-ring .ring-bg { fill: none; stroke: rgba(255,255,255,.2); stroke-width: 7; }
+  .adherence-ring .ring-fill {
+    fill: none; stroke: var(--mint);
+    stroke-width: 7; stroke-linecap: round;
+    stroke-dasharray: 188;
+    stroke-dashoffset: 38; /* 80% */
+    transition: stroke-dashoffset 1.2s ease;
+  }
+  .ring-label {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 17px; font-weight: 800; color: white;
+    line-height: 1;
+  }
+  .ring-label small { font-size: 9px; font-weight: 600; color: rgba(255,255,255,.6); }
+  .adherence-info { flex: 1; }
+  .adherence-info h3 { font-size: 16px; font-weight: 800; color: white; margin-bottom: 4px; }
+  .adherence-info p  { font-size: 13px; color: rgba(255,255,255,.6); line-height: 1.4; }
+
+  .home-body { padding: 16px 20px 100px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* Today strip */
+  .today-header {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .see-all {
+    font-size: 13px; font-weight: 700; color: var(--mint);
+    cursor: pointer; border: none; background: none;
+  }
+  .med-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background .15s;
+    border-radius: 8px;
+    padding-left: 4px; padding-right: 4px;
+  }
+  .med-row:last-child { border-bottom: none; }
+  .med-row:hover { background: var(--bg); }
+  .med-icon {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .med-info { flex: 1; }
+  .med-name { font-size: 15px; font-weight: 800; color: var(--text); }
+  .med-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .med-time {
+    font-size: 13px; font-weight: 700; color: var(--sky);
+    background: var(--sky-soft); padding: 4px 10px; border-radius: 50px;
+  }
+  .med-check {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .2s;
+    flex-shrink: 0;
+  }
+  .med-check.done {
+    background: var(--mint); border-color: var(--mint);
+  }
+
+  /* Family members */
+  .family-scroll {
+    display: flex; gap: 14px;
+    overflow-x: auto; padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .family-scroll::-webkit-scrollbar { display: none; }
+  .family-member {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    flex-shrink: 0; cursor: pointer;
+  }
+  .family-avatar-wrap {
+    position: relative;
+  }
+  .family-avatar {
+    width: 58px; height: 58px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; color: white;
+    border: 3px solid transparent;
+    transition: border .2s;
+  }
+  .family-avatar.active { border-color: var(--mint); }
+  .family-badge {
+    position: absolute; bottom: 0; right: -2px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--coral);
+    border: 2px solid var(--bg);
+    font-size: 10px; font-weight: 800; color: white;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .family-name { font-size: 12px; font-weight: 700; color: var(--muted); }
+
+  /* Quick actions */
+  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .quick-action {
+    background: white;
+    border-radius: var(--r);
+    padding: 18px 16px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+    cursor: pointer; transition: all .2s;
+    border: 2px solid transparent;
+    box-shadow: var(--shadow);
+  }
+  .quick-action:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .quick-action:active { transform: scale(.97); }
+  .quick-action .qa-icon { font-size: 28px; }
+  .quick-action .qa-label {
+    font-size: 13px; font-weight: 800; color: var(--text); line-height: 1.3;
+  }
+
+  /* ══════════════════════════════════════════
+     SCREEN 4 — ADD MED
+  ══════════════════════════════════════════ */
+  #screen-add-med {
+    background: var(--bg); flex-direction: column;
+  }
+  .add-med-body { padding: 20px 20px 100px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* Pill shape selector */
+  .shape-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+  .shape-item {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: pointer;
+  }
+  .shape-circle {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    transition: all .2s;
+  }
+  .shape-item.selected .shape-circle {
+    background: var(--mint-soft); border-color: var(--mint);
+  }
+  .shape-label { font-size: 11px; font-weight: 700; color: var(--muted); }
+
+  /* Color picker */
+  .color-row { display: flex; gap: 10px; }
+  .color-swatch {
+    width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; transition: all .2s;
+    position: relative;
+  }
+  .color-swatch.selected::after {
+    content: '✓';
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 900; font-size: 16px;
+  }
+
+  /* Schedule pill */
+  .schedule-row {
+    display: flex; gap: 8px;
+  }
+  .sched-pill {
+    flex: 1; padding: 10px 6px;
+    border-radius: 50px; text-align: center;
+    font-size: 12px; font-weight: 800;
+    background: var(--bg); color: var(--muted);
+    cursor: pointer; border: 2px solid transparent;
+    transition: all .2s;
+  }
+  .sched-pill.selected {
+    background: var(--mint-soft); color: var(--mint-dark);
+    border-color: var(--mint);
+  }
+
+  /* Time tags */
+  .time-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .time-tag {
+    padding: 8px 14px;
+    border-radius: 50px;
+    background: var(--bg);
+    font-size: 13px; font-weight: 700; color: var(--text);
+    cursor: pointer; border: 2px solid var(--border);
+    transition: all .2s;
+  }
+  .time-tag.selected { background: var(--mint); color: white; border-color: var(--mint); }
+
+  /* ══════════════════════════════════════════
+     SCREEN 5 — SENIOR MODE (MODO ABUELA)
+  ══════════════════════════════════════════ */
+  #screen-senior {
+    background: #FAFBFF; flex-direction: column;
+  }
+  .senior-header {
+    background: linear-gradient(135deg, #4FA3E0, #2d7fc0);
+    padding: 24px; text-align: center;
+    padding-bottom: 32px;
+  }
+  .senior-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px; font-weight: 800; color: white; margin-top: 10px;
+  }
+  .senior-header p { font-size: 16px; color: rgba(255,255,255,.8); margin-top: 6px; }
+
+  .senior-body { padding: 20px 20px 100px; display: flex; flex-direction: column; gap: 20px; }
+
+  .senior-med-card {
+    background: white;
+    border-radius: 24px;
+    padding: 28px 24px;
+    box-shadow: 0 6px 28px rgba(30,50,100,.1);
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; gap: 16px;
+    border: 3px solid var(--border);
+    cursor: pointer; transition: all .2s;
+  }
+  .senior-med-card.urgent { border-color: var(--coral); background: #fff8f8; }
+  .senior-med-card.done   { border-color: var(--mint); background: var(--mint-soft); opacity: .75; }
+  .senior-med-icon { font-size: 56px; line-height: 1; }
+  .senior-med-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px; font-weight: 800; color: var(--text);
+  }
+  .senior-med-dose { font-size: 18px; color: var(--muted); font-weight: 600; }
+  .senior-med-time {
+    font-size: 22px; font-weight: 800;
+    color: var(--sky); background: var(--sky-soft);
+    padding: 8px 24px; border-radius: 50px;
+  }
+  .senior-take-btn {
+    width: 100%;
+    padding: 20px;
+    border-radius: 16px;
+    font-size: 20px; font-weight: 800;
+  }
+
+  /* Voice reminder */
+  .voice-btn {
+    background: var(--purple);
+    color: white;
+    border-radius: 20px;
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 16px;
+    cursor: pointer; transition: all .2s;
+    border: none; width: 100%;
+  }
+  .voice-icon { font-size: 32px; }
+  .voice-text { text-align: left; }
+  .voice-text h3 { font-size: 17px; font-weight: 800; color: white; }
+  .voice-text p  { font-size: 13px; color: rgba(255,255,255,.7); }
+
+  /* ══════════════════════════════════════════
+     SCREEN 6 — NOTIFICACIÓN PUSH
+  ══════════════════════════════════════════ */
+  #screen-notification {
+    background: linear-gradient(160deg, #1a1a2e 0%, #2d2d4e 100%);
+    flex-direction: column; align-items: center; justify-content: center;
+  }
+  .notif-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 40%, rgba(255,107,107,.15) 0%, transparent 55%);
+  }
+  .notif-time-big {
+    font-family: 'Syne', sans-serif;
+    font-size: 68px; font-weight: 800; color: white;
+    letter-spacing: -2px; text-align: center;
+    position: relative; z-index: 1;
+    margin-bottom: 4px;
+  }
+  .notif-date {
+    font-size: 16px; color: rgba(255,255,255,.5);
+    position: relative; z-index: 1; text-align: center;
+    margin-bottom: 40px;
+  }
+  .notif-card {
+    background: rgba(255,255,255,.14);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 20px;
+    padding: 18px 20px;
+    width: calc(100% - 48px);
+    position: relative; z-index: 1;
+    animation: slideInUp .5s ease;
+  }
+  .notif-card-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .notif-app-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--mint), var(--sky));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .notif-app-name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.6); }
+  .notif-now      { font-size: 12px; color: rgba(255,255,255,.4); margin-left: auto; }
+  .notif-title    { font-size: 17px; font-weight: 800; color: white; margin-bottom: 5px; }
+  .notif-body     { font-size: 14px; color: rgba(255,255,255,.7); line-height: 1.4; }
+  .notif-actions  {
+    display: flex; gap: 10px; margin-top: 14px;
+  }
+  .notif-action {
+    flex: 1; padding: 10px;
+    border-radius: 50px;
+    font-size: 14px; font-weight: 800;
+    cursor: pointer; transition: all .2s; border: none;
+  }
+  .notif-action.dismiss {
+    background: rgba(255,255,255,.12); color: rgba(255,255,255,.7);
+  }
+  .notif-action.confirm {
+    background: var(--coral); color: white;
+  }
+  .notif-animation {
+    position: relative; z-index: 1;
+    text-align: center; margin-top: 32px;
+    font-size: 13px; color: rgba(255,255,255,.4);
+  }
+  .pulse-ring {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(255,107,107,.2);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    animation: pulse 2s infinite;
+  }
+  .pulse-ring-inner {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: var(--coral);
+    font-size: 26px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ══════════════════════════════════════════
+     SCREEN 7 — REPORTE MÉDICO
+  ══════════════════════════════════════════ */
+  #screen-report {
+    background: var(--bg); flex-direction: column;
+  }
+  .report-body { padding: 16px 20px 100px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* Summary banner */
+  .report-banner {
+    background: linear-gradient(135deg, var(--mint), #2aaa84);
+    border-radius: 20px; padding: 24px;
+    display: flex; align-items: center; gap: 20px;
+  }
+  .report-score {
+    text-align: center; flex-shrink: 0;
+  }
+  .report-score-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 48px; font-weight: 800; color: white; line-height: 1;
+  }
+  .report-score-label { font-size: 13px; color: rgba(255,255,255,.7); font-weight: 700; }
+  .report-banner-info h3 { font-size: 18px; font-weight: 800; color: white; margin-bottom: 4px; }
+  .report-banner-info p  { font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.4; }
+
+  /* Bar chart */
+  .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .bar-day { font-size: 12px; font-weight: 700; color: var(--muted); width: 26px; }
+  .bar-track {
+    flex: 1; height: 24px; background: var(--bg); border-radius: 50px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 50px;
+    background: var(--mint);
+    transition: width 1s cubic-bezier(.4,0,.2,1);
+  }
+  .bar-fill.partial { background: var(--amber); }
+  .bar-fill.low     { background: var(--coral); }
+  .bar-pct { font-size: 12px; font-weight: 800; color: var(--text); width: 36px; text-align: right; }
+
+  /* Med breakdown table */
+  .med-breakdown { display: flex; flex-direction: column; gap: 10px; }
+  .breakdown-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    background: white; border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+  .breakdown-icon { font-size: 28px; }
+  .breakdown-info { flex: 1; }
+  .breakdown-name { font-size: 14px; font-weight: 800; color: var(--text); }
+  .breakdown-stat { font-size: 12px; color: var(--muted); }
+  .breakdown-pct  { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
+  .breakdown-mini-bar {
+    height: 4px; background: var(--bg); border-radius: 2px; margin-top: 5px;
+  }
+  .breakdown-mini-fill {
+    height: 100%; border-radius: 2px;
+    background: var(--mint);
+  }
+
+  /* Share btn */
+  .share-bar {
+    padding: 0 20px 24px;
+    display: flex; gap: 10px;
+    flex-shrink: 0;
+  }
+
+  /* ══════════════════════════════════════════
+     FLOATING ADD BUTTON
+  ══════════════════════════════════════════ */
+  .fab {
+    position: absolute; bottom: 82px; right: 20px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--mint), var(--sky));
+    color: white; font-size: 28px; font-weight: 300;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 24px rgba(62,207,164,.5);
+    cursor: pointer; border: none;
+    transition: all .2s;
+    z-index: 50;
+  }
+  .fab:hover   { transform: scale(1.08) rotate(90deg); }
+  .fab:active  { transform: scale(.95); }
+
+  /* ══════════════════════════════════════════
+     TOAST
+  ══════════════════════════════════════════ */
+  .toast {
+    position: absolute; bottom: 90px; left: 20px; right: 20px;
+    background: var(--text);
+    color: white; border-radius: 14px;
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; font-weight: 700;
+    z-index: 999;
+    box-shadow: 0 8px 32px rgba(0,0,0,.3);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all .3s;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { font-size: 20px; }
+
+  /* ══════════════════════════════════════════
+     MODAL
+  ══════════════════════════════════════════ */
+  .modal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 200;
+    display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    background: white;
+    border-radius: 28px 28px 0 0;
+    width: 100%;
+    padding: 8px 24px 36px;
+    transform: translateY(100%);
+    transition: transform .3s cubic-bezier(.4,0,.2,1);
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle {
+    width: 40px; height: 4px;
+    background: var(--border); border-radius: 2px;
+    margin: 12px auto 20px;
+  }
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800; color: var(--text);
+    margin-bottom: 16px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="notch"></div>
+    <div class="status-icons">
+      <!-- Signal -->
+      <svg viewBox="0 0 24 24" fill="currentColor"><rect x="1" y="16" width="3" height="7"/><rect x="6" y="11" width="3" height="12"/><rect x="11" y="6" width="3" height="17"/><rect x="16" y="1" width="3" height="22"/></svg>
+      <!-- Wifi -->
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1.5 8.5C5.4 4.8 10.4 2.8 12 2.8s6.6 2 10.5 5.7L21 10c-2.4-2.3-5.7-4-9-4s-6.6 1.7-9 4L1.5 8.5zm3 3.5C6.5 9.5 9.1 8 12 8s5.5 1.5 7.5 4L18 13.5C16.5 11.7 14.3 10.5 12 10.5s-4.5 1.2-6 3L4.5 12zm3 3.5C9 13.7 10.4 13 12 13s3 .7 4.5 2.5L15 17c-1-1.3-1.9-2-3-2s-2 .7-3 2l-1.5-2zM12 20.5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/></svg>
+      <!-- Battery -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="7" width="18" height="11" rx="2"/><path d="M22 11v3" stroke-linecap="round"/><rect x="3" y="9" width="12" height="7" rx="1" fill="currentColor" stroke="none"/></svg>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: SPLASH ══════════ -->
+  <div class="screen active" id="screen-splash">
+    <div class="splash-bg"></div>
+    <div class="splash-content">
+      <div class="splash-logo">💊</div>
+      <div class="splash-title">Medi<span>Family</span></div>
+      <p class="splash-sub">Tu asistente familiar para el manejo de medicamentos. Nunca más una dosis olvidada.</p>
+      <div class="splash-pills">
+        <span class="splash-pill">👨‍👩‍👧‍👦 Familiar</span>
+        <span class="splash-pill">🔔 Recordatorios</span>
+        <span class="splash-pill">📊 Reportes</span>
+        <span class="splash-pill">👵 Modo Adulto Mayor</span>
+      </div>
+      <div class="splash-cta">
+        <button class="btn btn-primary btn-full btn-lg" onclick="goTo('screen-onboarding')">
+          Comenzar gratis →
+        </button>
+      </div>
+      <p class="splash-login">¿Ya tenés cuenta? <span onclick="goTo('screen-home')">Iniciar sesión</span></p>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: ONBOARDING ══════════ -->
+  <div class="screen" id="screen-onboarding">
+    <div class="onb-progress" id="onb-progress">
+      <div class="onb-dot active"></div>
+      <div class="onb-dot"></div>
+      <div class="onb-dot"></div>
+      <div class="onb-dot"></div>
+    </div>
+
+    <div class="onb-slides">
+
+      <!-- Step 1 -->
+      <div class="onb-slide active" id="onb-0">
+        <div class="onb-illustration" style="background:var(--mint-soft);">
+          🏠
+          <div style="position:absolute;top:16px;right:16px;font-size:28px;">💊</div>
+          <div style="position:absolute;bottom:16px;left:16px;font-size:28px;">👨‍👩‍👧</div>
+        </div>
+        <h2 class="onb-title">Toda la familia, un solo lugar</h2>
+        <p class="onb-desc">Gestioná los medicamentos de toda tu familia desde una sola app. Mamá, papá, abuelos y niños.</p>
+        <div class="onb-feature-list">
+          <div class="onb-feature">
+            <div class="onb-feature-icon" style="background:var(--mint-soft);">👥</div>
+            <span>Hasta 6 perfiles de familia</span>
+          </div>
+          <div class="onb-feature">
+            <div class="onb-feature-icon" style="background:var(--sky-soft);">🔄</div>
+            <span>Sincronización en tiempo real</span>
+          </div>
+          <div class="onb-feature">
+            <div class="onb-feature-icon" style="background:var(--amber-soft);">🔒</div>
+            <span>Privacidad y datos seguros</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="onb-slide" id="onb-1">
+        <div class="onb-illustration" style="background:var(--sky-soft);">
+          🔔
+          <div style="position:absolute;top:10px;right:10px;background:var(--coral);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;">!</div>
+        </div>
+        <h2 class="onb-title">Recordatorios inteligentes</h2>
+        <p class="onb-desc">Recibí notificaciones en el momento exacto. El sistema aprende tus horarios y se adapta.</p>
+        <div class="onb-feature-list">
+          <div class="onb-feature">
+            <div class="onb-feature-icon" style="background:var(--coral-soft);">⏰</div>
+            <span>Alarmas personalizadas por medicamento</span>
+          </div>
+          <div class="onb-feature">
+            <div class="onb-feature-icon" style="background:var(--purple-soft);">🎙️</div>
+            <span>Recordatorios por voz para adultos mayores</span>
+          </div>
+          <div class="onb-feature">
+            <div class="onb-feature-icon" style="background:var(--mint-soft);">📱</div>
+            <span>Push, SMS y WhatsApp</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="onb-slide" id="onb-2">
+        <div class="onb-illustration" style="background:var(--amber-soft);">
+          📊
+        </div>
+        <h2 class="onb-title">Reportes para tu médico</h2>
+        <p class="onb-desc">Generá reportes de adherencia listos para compartir con tu médico en segundos.</p>
+        <div class="onb-feature-list">
+          <div class="onb-feature">
+            <div class="onb-feature-icon" style="background:var(--mint-soft);">📈</div>
+            <span>Historial de los últimos 30 días</span>
+          </div>
+          <div class="onb-feature">
+            <div class="onb-feature-icon" style="background:var(--sky-soft);">🩺</div>
+            <span>Formato médico estándar PDF</span>
+          </div>
+          <div class="onb-feature">
+            <div class="onb-feature-icon" style="background:var(--coral-soft);">📧</div>
+            <span>Envío directo al profesional</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 — Setup -->
+      <div class="onb-slide" id="onb-3" style="justify-content:flex-start;gap:16px;">
+        <div style="text-align:center;margin-top:8px;">
+          <div style="font-size:48px;margin-bottom:12px;">✨</div>
+          <h2 class="onb-title" style="font-size:22px;">Configuración rápida</h2>
+          <p style="font-size:14px;color:var(--muted);margin-top:6px;">Solo tardás 2 minutos en empezar</p>
+        </div>
+        <div class="card" style="width:100%;">
+          <div class="input-group">
+            <label>Tu nombre</label>
+            <input type="text" placeholder="ej: María García" value="María García">
+          </div>
+          <div class="input-group">
+            <label>¿Para quién es el perfil principal?</label>
+            <select>
+              <option>Para mí</option>
+              <option>Para un familiar adulto mayor</option>
+              <option>Para un niño</option>
+              <option>Para toda la familia</option>
+            </select>
+          </div>
+          <div class="input-group" style="margin-bottom:0;">
+            <label>Tu médico de cabecera (opcional)</label>
+            <input type="text" placeholder="Dr. / Dra. ...">
+          </div>
+        </div>
+        <div style="background:var(--mint-soft);border-radius:14px;padding:14px 16px;display:flex;gap:10px;align-items:flex-start;">
+          <span style="font-size:20px;">💡</span>
+          <p style="font-size:13px;color:var(--mint-dark);font-weight:600;line-height:1.4;">Podés agregar más perfiles familiares en cualquier momento desde el menú principal.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="onb-footer">
+      <button class="btn btn-primary btn-full" id="onb-next-btn" onclick="onbNext()">
+        Continuar →
+      </button>
+      <div class="onb-nav">
+        <button class="btn btn-outline" onclick="onbBack()" id="onb-back-btn" style="display:none;">← Atrás</button>
+        <span class="onb-step" id="onb-step-label">Paso 1 de 4</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: HOME ══════════ -->
+  <div class="screen" id="screen-home">
+    <div class="home-header">
+      <div class="home-header-bg"></div>
+      <div class="home-header-content">
+        <div class="home-greeting">Buenos días ☀️</div>
+        <div class="home-name">María García</div>
+        <div class="adherence-card">
+          <div class="adherence-ring">
+            <svg viewBox="0 0 72 72">
+              <circle class="ring-bg"   cx="36" cy="36" r="30"/>
+              <circle class="ring-fill" cx="36" cy="36" r="30" id="home-ring"/>
+            </svg>
+            <div class="ring-label">80%<small>hoy</small></div>
+          </div>
+          <div class="adherence-info">
+            <h3>Buena adherencia 🎉</h3>
+            <p>Tomaste 4 de 5 medicamentos programados para hoy.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-body">
+
+      <!-- Family members -->
+      <div>
+        <div class="today-header" style="margin-bottom:14px;">
+          <span class="section-title">Mi familia</span>
+          <button class="see-all">Ver todos</button>
+        </div>
+        <div class="family-scroll">
+          <div class="family-member" onclick="showToast('👤 Perfil de María seleccionado')">
+            <div class="family-avatar-wrap">
+              <div class="family-avatar active" style="background:linear-gradient(135deg,var(--mint),var(--sky));">MG</div>
+              <div class="family-badge">1</div>
+            </div>
+            <span class="family-name">Yo</span>
+          </div>
+          <div class="family-member" onclick="goTo('screen-senior')">
+            <div class="family-avatar-wrap">
+              <div class="family-avatar" style="background:linear-gradient(135deg,var(--amber),#e8803a);">AB</div>
+              <div class="family-badge">3</div>
+            </div>
+            <span class="family-name">Abuela</span>
+          </div>
+          <div class="family-member" onclick="showToast('👶 Perfil de Sofía')">
+            <div class="family-avatar-wrap">
+              <div class="family-avatar" style="background:linear-gradient(135deg,var(--purple),#7a5fcc);">SO</div>
+            </div>
+            <span class="family-name">Sofía</span>
+          </div>
+          <div class="family-member" onclick="showToast('👨 Perfil de Pedro')">
+            <div class="family-avatar-wrap">
+              <div class="family-avatar" style="background:linear-gradient(135deg,var(--sky),#2d7fc0);">PE</div>
+            </div>
+            <span class="family-name">Pedro</span>
+          </div>
+          <div class="family-member" onclick="showToast('➕ Agregar familiar')">
+            <div class="family-avatar-wrap">
+              <div class="family-avatar" style="background:var(--border);border:2.5px dashed var(--muted);color:var(--muted);">+</div>
+            </div>
+            <span class="family-name">Agregar</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's meds -->
+      <div class="card">
+        <div class="today-header" style="margin-bottom:14px;">
+          <span class="section-title">Hoy · Domingo 29 mar</span>
+          <button class="see-all">Historial</button>
+        </div>
+        <div class="med-row" onclick="toggleMed(this)">
+          <div class="med-icon" style="background:#fff0f5;">💊</div>
+          <div class="med-info">
+            <div class="med-name">Enalapril</div>
+            <div class="med-detail">10 mg · 1 comprimido</div>
+          </div>
+          <span class="med-time">08:00</span>
+          <div class="med-check done">✓</div>
+        </div>
+        <div class="med-row" onclick="toggleMed(this)">
+          <div class="med-icon" style="background:#fff7e8;">🟡</div>
+          <div class="med-info">
+            <div class="med-name">Metformina</div>
+            <div class="med-detail">500 mg · 1 comprimido</div>
+          </div>
+          <span class="med-time">08:00</span>
+          <div class="med-check done">✓</div>
+        </div>
+        <div class="med-row" onclick="toggleMed(this)">
+          <div class="med-icon" style="background:#e8f4fd;">💉</div>
+          <div class="med-info">
+            <div class="med-name">Losartán</div>
+            <div class="med-detail">50 mg · 1 comprimido</div>
+          </div>
+          <span class="med-time" style="color:var(--coral);background:var(--coral-soft);">⚠ 14:00</span>
+          <div class="med-check"></div>
+        </div>
+        <div class="med-row" onclick="toggleMed(this)">
+          <div class="med-icon" style="background:#f3effd;">🔵</div>
+          <div class="med-info">
+            <div class="med-name">Omeprazol</div>
+            <div class="med-detail">20 mg · 1 cápsula</div>
+          </div>
+          <span class="med-time">20:00</span>
+          <div class="med-check"></div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div>
+        <div class="today-header" style="margin-bottom:14px;">
+          <span class="section-title">Acciones rápidas</span>
+        </div>
+        <div class="quick-grid">
+          <div class="quick-action" onclick="goTo('screen-add-med')">
+            <span class="qa-icon">➕</span>
+            <span class="qa-label">Agregar medicamento</span>
+          </div>
+          <div class="quick-action" onclick="goTo('screen-senior')">
+            <span class="qa-icon">👵</span>
+            <span class="qa-label">Modo adulto mayor</span>
+          </div>
+          <div class="quick-action" onclick="goTo('screen-report')">
+            <span class="qa-icon">📊</span>
+            <span class="qa-label">Reporte para médico</span>
+          </div>
+          <div class="quick-action" onclick="goTo('screen-notification')">
+            <span class="qa-icon">🔔</span>
+            <span class="qa-label">Simular notificación</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" onclick="goTo('screen-add-med')">+</button>
+
+    <!-- Nav bar -->
+    <div class="nav-bar">
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Inicio
+      </button>
+      <button class="nav-item" onclick="showToast('📋 Sección Medicamentos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+        Meds
+      </button>
+      <button class="nav-item" onclick="goTo('screen-report')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Reportes
+      </button>
+      <button class="nav-item" onclick="showToast('⚙️ Configuración')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Config
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: ADD MED ══════════ -->
+  <div class="screen" id="screen-add-med">
+    <div class="top-bar" style="background:white;">
+      <button class="back-btn" onclick="goBack()">←</button>
+      <h1>Nuevo medicamento</h1>
+      <div style="width:40px;"></div>
+    </div>
+
+    <div class="add-med-body">
+
+      <!-- Basic info -->
+      <div class="card">
+        <p class="section-title" style="margin-bottom:16px;">Información básica</p>
+        <div class="input-group">
+          <label>Nombre del medicamento</label>
+          <input type="text" placeholder="ej: Enalapril" id="med-name-input">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="input-group" style="margin:0;">
+            <label>Dosis</label>
+            <input type="text" placeholder="ej: 10 mg">
+          </div>
+          <div class="input-group" style="margin:0;">
+            <label>Forma</label>
+            <select>
+              <option>Comprimido</option>
+              <option>Cápsula</option>
+              <option>Solución</option>
+              <option>Inyectable</option>
+              <option>Parche</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Icon & Color -->
+      <div class="card">
+        <p class="section-title" style="margin-bottom:16px;">Ícono y color</p>
+        <div class="shape-grid" id="shape-grid">
+          <div class="shape-item selected" onclick="selectShape(this)"><div class="shape-circle">💊</div><span class="shape-label">Pastilla</span></div>
+          <div class="shape-item" onclick="selectShape(this)"><div class="shape-circle">🟡</div><span class="shape-label">Tableta</span></div>
+          <div class="shape-item" onclick="selectShape(this)"><div class="shape-circle">💉</div><span class="shape-label">Inyect.</span></div>
+          <div class="shape-item" onclick="selectShape(this)"><div class="shape-circle">🩹</div><span class="shape-label">Parche</span></div>
+          <div class="shape-item" onclick="selectShape(this)"><div class="shape-circle">🧴</div><span class="shape-label">Jarabe</span></div>
+        </div>
+        <div style="margin-top:16px;">
+          <label style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:8px;">Color de etiqueta</label>
+          <div class="color-row">
+            <div class="color-swatch selected" style="background:#3ECFA4;" onclick="selectColor(this)"></div>
+            <div class="color-swatch" style="background:#FF6B6B;" onclick="selectColor(this)"></div>
+            <div class="color-swatch" style="background:#4FA3E0;" onclick="selectColor(this)"></div>
+            <div class="color-swatch" style="background:#FFB347;" onclick="selectColor(this)"></div>
+            <div class="color-swatch" style="background:#9B7FE8;" onclick="selectColor(this)"></div>
+            <div class="color-swatch" style="background:#FF8FAB;" onclick="selectColor(this)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="card">
+        <p class="section-title" style="margin-bottom:16px;">Frecuencia</p>
+        <div class="schedule-row" id="sched-row">
+          <div class="sched-pill selected" onclick="selectSched(this)">Diario</div>
+          <div class="sched-pill" onclick="selectSched(this)">Días alt.</div>
+          <div class="sched-pill" onclick="selectSched(this)">Semanal</div>
+          <div class="sched-pill" onclick="selectSched(this)">S/Receta</div>
+        </div>
+        <div style="margin-top:16px;">
+          <label style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:8px;">Horarios</label>
+          <div class="time-tags" id="time-tags">
+            <div class="time-tag selected" onclick="toggleTime(this)">🌅 08:00</div>
+            <div class="time-tag" onclick="toggleTime(this)">☀️ 13:00</div>
+            <div class="time-tag" onclick="toggleTime(this)">🌆 18:00</div>
+            <div class="time-tag selected" onclick="toggleTime(this)">🌙 22:00</div>
+            <div class="time-tag" onclick="toggleTime(this)">+ Agregar</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Caregiver alert -->
+      <div class="card" style="border:2px solid var(--mint-soft);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:28px;">👨‍👩‍👧</span>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:800;color:var(--text);">Alertar a cuidadores</p>
+            <p style="font-size:12px;color:var(--muted);margin-top:2px;">Notificar si la dosis no se confirma en 30 min</p>
+          </div>
+          <div id="toggle-alert" onclick="toggleAlert()" style="width:46px;height:26px;background:var(--mint);border-radius:13px;cursor:pointer;position:relative;transition:all .2s;">
+            <div style="position:absolute;top:3px;right:3px;width:20px;height:20px;background:white;border-radius:50%;transition:all .2s;" id="toggle-knob"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Who is it for -->
+      <div class="card">
+        <p class="section-title" style="margin-bottom:16px;">¿Para quién?</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div onclick="selectWho(this)" style="flex:1;min-width:80px;padding:12px;border-radius:14px;border:2.5px solid var(--mint);background:var(--mint-soft);text-align:center;cursor:pointer;transition:all .2s;">
+            <div style="font-size:24px;margin-bottom:4px;">👤</div>
+            <div style="font-size:12px;font-weight:800;color:var(--mint-dark);">Yo (María)</div>
+          </div>
+          <div onclick="selectWho(this)" style="flex:1;min-width:80px;padding:12px;border-radius:14px;border:2.5px solid var(--border);text-align:center;cursor:pointer;transition:all .2s;">
+            <div style="font-size:24px;margin-bottom:4px;">👵</div>
+            <div style="font-size:12px;font-weight:800;color:var(--muted);">Abuela</div>
+          </div>
+          <div onclick="selectWho(this)" style="flex:1;min-width:80px;padding:12px;border-radius:14px;border:2.5px solid var(--border);text-align:center;cursor:pointer;transition:all .2s;">
+            <div style="font-size:24px;margin-bottom:4px;">👧</div>
+            <div style="font-size:12px;font-weight:800;color:var(--muted);">Sofía</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full btn-lg" onclick="saveMed()">
+        💾 Guardar medicamento
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: SENIOR ══════════ -->
+  <div class="screen" id="screen-senior">
+    <div class="senior-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <button class="back-btn" onclick="goBack()" style="background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.3);">←</button>
+        <span style="font-size:13px;font-weight:700;color:rgba(255,255,255,.7);">MODO ADULTO MAYOR</span>
+        <div style="width:40px;"></div>
+      </div>
+      <div style="text-align:center;margin-top:12px;">
+        <div style="font-size:48px;margin-bottom:6px;">👵</div>
+        <h1 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:white;">Hola, Abuela Rosa</h1>
+        <p style="font-size:16px;color:rgba(255,255,255,.7);margin-top:4px;">Domingo 29 de marzo · 9:41 AM</p>
+      </div>
+    </div>
+
+    <div class="senior-body">
+
+      <!-- Pending med -->
+      <div class="senior-med-card urgent" id="senior-card-1">
+        <div class="senior-med-icon">💊</div>
+        <div class="senior-med-name">Enalapril</div>
+        <div class="senior-med-dose">1 comprimido de 10 mg</div>
+        <div class="senior-med-time">⏰ 09:00 AM</div>
+        <button class="btn btn-coral senior-take-btn" onclick="seniorTake('senior-card-1', this)">
+          ✅ Tomé mi medicamento
+        </button>
+      </div>
+
+      <!-- Pending med 2 -->
+      <div class="senior-med-card" id="senior-card-2">
+        <div class="senior-med-icon">🟡</div>
+        <div class="senior-med-name">Metformina</div>
+        <div class="senior-med-dose">1 comprimido de 500 mg</div>
+        <div class="senior-med-time">🍽️ Después del almuerzo · 13:00</div>
+        <button class="btn btn-sky senior-take-btn" onclick="seniorTake('senior-card-2', this)" style="margin-top:4px;">
+          ✅ Tomé mi medicamento
+        </button>
+      </div>
+
+      <!-- Done med -->
+      <div class="senior-med-card done">
+        <div class="senior-med-icon">🔵</div>
+        <div class="senior-med-name">Omeprazol</div>
+        <div class="senior-med-dose">1 cápsula de 20 mg</div>
+        <div class="senior-med-time" style="color:var(--mint-dark);background:var(--mint-soft);">✓ Tomado a las 08:10</div>
+      </div>
+
+      <!-- Voice button -->
+      <button class="voice-btn" onclick="showToast('🎙️ Reproduciendo recordatorio de voz...')">
+        <span class="voice-icon">🔊</span>
+        <div class="voice-text">
+          <h3>Escuchar recordatorio</h3>
+          <p>Presioná para oír las indicaciones en voz alta</p>
+        </div>
+      </button>
+
+      <!-- Contact caregiver -->
+      <div class="card" style="border:2.5px solid var(--sky);">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span style="font-size:32px;">📱</span>
+          <div style="flex:1;">
+            <p style="font-size:16px;font-weight:800;color:var(--text);">Llamar a María</p>
+            <p style="font-size:13px;color:var(--muted);">Tu cuidadora principal</p>
+          </div>
+          <button class="btn btn-sky" onclick="showToast('📞 Llamando a María...')" style="padding:10px 16px;font-size:14px;">Llamar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: NOTIFICATION ══════════ -->
+  <div class="screen" id="screen-notification">
+    <div class="notif-bg"></div>
+    <div style="position:relative;z-index:1;padding:60px 24px 40px;display:flex;flex-direction:column;align-items:center;flex:1;">
+
+      <div class="notif-time-big">09:41</div>
+      <div class="notif-date">Domingo, 29 de marzo</div>
+
+      <!-- Notification card -->
+      <div class="notif-card">
+        <div class="notif-card-header">
+          <div class="notif-app-icon">💊</div>
+          <div>
+            <div class="notif-app-name">MediFamily</div>
+          </div>
+          <span class="notif-now">ahora</span>
+        </div>
+        <div class="notif-title">💊 Recordatorio de medicamento</div>
+        <div class="notif-body">Es hora de tomar el <strong style="color:rgba(255,255,255,.95);">Enalapril 10 mg</strong> de la Abuela Rosa. No olvidés confirmarlo.</div>
+        <div class="notif-actions">
+          <button class="notif-action dismiss" onclick="showToast('⏰ Pospuesto 15 minutos')">Posponer</button>
+          <button class="notif-action confirm" onclick="showToast('✅ ¡Confirmado! Dosis registrada')">Confirmar ✓</button>
+        </div>
+      </div>
+
+      <!-- Pulse animation -->
+      <div style="margin-top:40px;display:flex;flex-direction:column;align-items:center;gap:16px;">
+        <div class="pulse-ring">
+          <div class="pulse-ring-inner">🔔</div>
+        </div>
+        <p style="font-size:14px;color:rgba(255,255,255,.5);text-align:center;">
+          Alarma activa para Enalapril 10 mg<br>Abuela Rosa · 09:00 AM
+        </p>
+      </div>
+
+      <!-- Back button -->
+      <button class="btn btn-outline" onclick="goBack()" style="margin-top:32px;background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.2);">
+        ← Volver al inicio
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ SCREEN: REPORT ══════════ -->
+  <div class="screen" id="screen-report">
+    <div class="top-bar" style="background:white;">
+      <button class="back-btn" onclick="goBack()">←</button>
+      <h1>Reporte médico</h1>
+      <button style="font-size:20px;background:none;border:none;cursor:pointer;" onclick="showToast('📤 Compartiendo reporte...')">↑</button>
+    </div>
+
+    <div class="report-body">
+
+      <!-- Patient info -->
+      <div style="display:flex;align-items:center;gap:14px;padding:4px 0;">
+        <div class="avatar" style="background:linear-gradient(135deg,var(--mint),var(--sky));font-size:16px;">MG</div>
+        <div>
+          <p style="font-size:15px;font-weight:800;color:var(--text);">María García</p>
+          <p style="font-size:12px;color:var(--muted);">DNI 28.xxx.xxx · 52 años · Dr. Pérez</p>
+        </div>
+        <span class="chip chip-mint" style="margin-left:auto;">Marzo 2026</span>
+      </div>
+
+      <!-- Summary banner -->
+      <div class="report-banner">
+        <div class="report-score">
+          <div class="report-score-num">82%</div>
+          <div class="report-score-label">adherencia</div>
+        </div>
+        <div class="report-banner-info">
+          <h3>Adherencia buena</h3>
+          <p>Tomó 82 de 100 dosis programadas en los últimos 30 días. 3 omisiones críticas de Enalapril.</p>
+        </div>
+      </div>
+
+      <!-- Weekly chart -->
+      <div class="card">
+        <p class="section-title" style="margin-bottom:16px;">Última semana</p>
+        <div class="bar-chart">
+          <div class="bar-row">
+            <span class="bar-day">L</span>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div>
+            <span class="bar-pct">100%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-day">M</span>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div>
+            <span class="bar-pct">100%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-day">X</span>
+            <div class="bar-track"><div class="bar-fill partial" style="width:60%;"></div></div>
+            <span class="bar-pct">60%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-day">J</span>
+            <div class="bar-track"><div class="bar-fill" style="width:80%;"></div></div>
+            <span class="bar-pct">80%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-day">V</span>
+            <div class="bar-track"><div class="bar-fill low" style="width:40%;"></div></div>
+            <span class="bar-pct">40%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-day">S</span>
+            <div class="bar-track"><div class="bar-fill" style="width:100%;"></div></div>
+            <span class="bar-pct">100%</span>
+          </div>
+          <div class="bar-row">
+            <span class="bar-day">D</span>
+            <div class="bar-track"><div class="bar-fill partial" style="width:80%;"></div></div>
+            <span class="bar-pct">80%</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:14px;">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+            <div style="width:12px;height:12px;border-radius:3px;background:var(--mint);"></div>Completo
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+            <div style="width:12px;height:12px;border-radius:3px;background:var(--amber);"></div>Parcial
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+            <div style="width:12px;height:12px;border-radius:3px;background:var(--coral);"></div>Bajo
+          </div>
+        </div>
+      </div>
+
+      <!-- Med breakdown -->
+      <div class="card">
+        <p class="section-title" style="margin-bottom:16px;">Por medicamento</p>
+        <div class="med-breakdown">
+          <div class="breakdown-row">
+            <span class="breakdown-icon">💊</span>
+            <div class="breakdown-info">
+              <div class="breakdown-name">Enalapril 10 mg</div>
+              <div class="breakdown-stat">27/30 dosis · 3 omisiones</div>
+              <div class="breakdown-mini-bar"><div class="breakdown-mini-fill" style="width:90%;"></div></div>
+            </div>
+            <span class="breakdown-pct" style="color:var(--mint);">90%</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-icon">🟡</span>
+            <div class="breakdown-info">
+              <div class="breakdown-name">Metformina 500 mg</div>
+              <div class="breakdown-stat">24/30 dosis · 6 omisiones</div>
+              <div class="breakdown-mini-bar"><div class="breakdown-mini-fill" style="width:80%;background:var(--amber);"></div></div>
+            </div>
+            <span class="breakdown-pct" style="color:var(--amber);">80%</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-icon">💉</span>
+            <div class="breakdown-info">
+              <div class="breakdown-name">Losartán 50 mg</div>
+              <div class="breakdown-stat">21/30 dosis · 9 omisiones</div>
+              <div class="breakdown-mini-bar"><div class="breakdown-mini-fill" style="width:70%;background:var(--coral);"></div></div>
+            </div>
+            <span class="breakdown-pct" style="color:var(--coral);">70%</span>
+          </div>
+          <div class="breakdown-row">
+            <span class="breakdown-icon">🔵</span>
+            <div class="breakdown-info">
+              <div class="breakdown-name">Omeprazol 20 mg</div>
+              <div class="breakdown-stat">30/30 dosis · 0 omisiones</div>
+              <div class="breakdown-mini-bar"><div class="breakdown-mini-fill" style="width:100%;"></div></div>
+            </div>
+            <span class="breakdown-pct" style="color:var(--mint);">100%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Observations -->
+      <div class="card" style="border-left:4px solid var(--coral);">
+        <p style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:8px;">⚠️ Observaciones para el médico</p>
+        <ul style="font-size:13px;color:var(--muted);line-height:1.8;padding-left:18px;">
+          <li>Adherencia a Losartán bajo el 75% recomendado</li>
+          <li>3 omisiones consecutivas el viernes 21/03</li>
+          <li>Paciente reportó olvidos por viaje</li>
+        </ul>
+      </div>
+
+      <!-- Share buttons -->
+      <div style="display:flex;gap:10px;padding-bottom:8px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="showToast('📧 Enviando al Dr. Pérez...')">
+          📧 Enviar al médico
+        </button>
+        <button class="btn btn-outline" onclick="showToast('📥 Descargando PDF...')">
+          PDF
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Nav bar -->
+    <div class="nav-bar">
+      <button class="nav-item" onclick="goTo('screen-home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Inicio
+      </button>
+      <button class="nav-item" onclick="showToast('📋 Medicamentos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+        Meds
+      </button>
+      <button class="nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Reportes
+      </button>
+      <button class="nav-item" onclick="showToast('⚙️ Configuración')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        Config
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ TOAST ══════════ -->
+  <div class="toast" id="toast">
+    <span class="toast-icon" id="toast-icon">✅</span>
+    <span id="toast-msg">Acción realizada</span>
+  </div>
+
+  <!-- ══════════ MODAL ══════════ -->
+  <div class="modal-overlay" id="modal" onclick="closeModal(event)">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title" id="modal-title">Detalle</div>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<script>
+  /* ── STATE ── */
+  let currentScreen = 'screen-splash';
+  let screenHistory  = [];
+  let onbStep        = 0;
+  let alertOn        = true;
+
+  /* ── NAVIGATION ── */
+  function goTo(id) {
+    const prev = document.getElementById(currentScreen);
+    const next = document.getElementById(id);
+    if (!next) return;
+    prev.classList.remove('active');
+    next.classList.add('active');
+    screenHistory.push(currentScreen);
+    currentScreen = id;
+    next.scrollTop = 0;
+  }
+
+  function goBack() {
+    if (screenHistory.length === 0) return;
+    const prev = screenHistory.pop();
+    document.getElementById(currentScreen).classList.remove('active');
+    document.getElementById(prev).classList.add('active');
+    document.getElementById(prev).scrollTop = 0;
+    currentScreen = prev;
+  }
+
+  /* ── ONBOARDING ── */
+  function updateOnboarding() {
+    const slides = document.querySelectorAll('.onb-slide');
+    const dots   = document.querySelectorAll('.onb-dot');
+    const nextBtn  = document.getElementById('onb-next-btn');
+    const backBtn  = document.getElementById('onb-back-btn');
+    const stepLbl  = document.getElementById('onb-step-label');
+
+    slides.forEach((s, i) => {
+      s.classList.remove('active', 'exit');
+      if (i === onbStep) s.classList.add('active');
+    });
+    dots.forEach((d, i) => {
+      d.classList.remove('active', 'done');
+      if (i === onbStep) d.classList.add('active');
+      if (i < onbStep)  d.classList.add('done');
+    });
+
+    backBtn.style.display = onbStep > 0 ? 'inline-flex' : 'none';
+    stepLbl.textContent   = `Paso ${onbStep+1} de 4`;
+    nextBtn.textContent   = onbStep === 3 ? '🚀 Empezar' : 'Continuar →';
+  }
+
+  function onbNext() {
+    if (onbStep < 3) { onbStep++; updateOnboarding(); }
+    else { goTo('screen-home'); onbStep = 0; }
+  }
+
+  function onbBack() {
+    if (onbStep > 0) { onbStep--; updateOnboarding(); }
+  }
+
+  /* ── MED TOGGLE (home) ── */
+  function toggleMed(row) {
+    const check = row.querySelector('.med-check');
+    const isDone = check.classList.contains('done');
+    check.classList.toggle('done');
+    check.textContent = isDone ? '' : '✓';
+    showToast(isDone ? '↩️ Dosis desmarcada' : '✅ ¡Dosis confirmada!');
+  }
+
+  /* ── SENIOR TAKE ── */
+  function seniorTake(cardId, btn) {
+    const card = document.getElementById(cardId);
+    const name = card.querySelector('.senior-med-name').textContent;
+    card.classList.remove('urgent');
+    card.classList.add('done');
+    const timeEl = card.querySelector('.senior-med-time');
+    timeEl.textContent = '✓ Tomado ahora';
+    timeEl.style.color = 'var(--mint-dark)';
+    timeEl.style.background = 'var(--mint-soft)';
+    btn.style.display = 'none';
+    btn.parentElement.insertAdjacentHTML('beforeend',
+      '<p style="font-size:16px;color:var(--mint-dark);font-weight:800;margin-top:8px;">¡Muy bien! 🎉</p>');
+    showToast(`✅ ${name} confirmado`);
+  }
+
+  /* ── ADD MED helpers ── */
+  function selectShape(el) {
+    document.querySelectorAll('.shape-item').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function selectColor(el) {
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function selectSched(el) {
+    document.querySelectorAll('.sched-pill').forEach(s => s.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+  function toggleTime(el) {
+    el.classList.toggle('selected');
+  }
+  function selectWho(el) {
+    el.closest('.card').querySelectorAll('[onclick]').forEach(w => {
+      w.style.borderColor = 'var(--border)';
+      w.style.background  = '';
+      w.querySelector('div:last-child').style.color = 'var(--muted)';
+    });
+    el.style.borderColor = 'var(--mint)';
+    el.style.background  = 'var(--mint-soft)';
+    el.querySelector('div:last-child').style.color = 'var(--mint-dark)';
+  }
+  function toggleAlert() {
+    alertOn = !alertOn;
+    const t  = document.getElementById('toggle-alert');
+    const k  = document.getElementById('toggle-knob');
+    t.style.background = alertOn ? 'var(--mint)' : 'var(--border)';
+    k.style.right = alertOn ? '3px' : 'auto';
+    k.style.left  = alertOn ? 'auto' : '3px';
+  }
+  function saveMed() {
+    const name = document.getElementById('med-name-input').value || 'Nuevo medicamento';
+    showToast(`💊 "${name}" guardado correctamente`);
+    setTimeout(() => goBack(), 1400);
+  }
+
+  /* ── TOAST ── */
+  let toastTimer;
+  function showToast(msg) {
+    const t   = document.getElementById('toast');
+    const m   = document.getElementById('toast-msg');
+    const ico = document.getElementById('toast-icon');
+    m.textContent = msg.replace(/^[\u{1F000}-\u{1FFFF}✅⚠️📊📧📥📞🎙️🔔↩️💾]\s*/u,'');
+    const match = msg.match(/^([\u{1F000}-\u{1FFFF}✅⚠️📊📧📥📞🎙️🔔↩️💾]+)/u);
+    ico.textContent = match ? match[0] : '✅';
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  /* ── MODAL ── */
+  function openModal(title, bodyHTML) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-body').innerHTML = bodyHTML;
+    document.getElementById('modal').classList.add('open');
+  }
+  function closeModal(e) {
+    if (e.target === document.getElementById('modal'))
+      document.getElementById('modal').classList.remove('open');
+  }
+
+  /* init */
+  updateOnboarding();
+</script>
+</body>
+</html>
